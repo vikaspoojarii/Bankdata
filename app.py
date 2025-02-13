@@ -27,8 +27,14 @@ print(os.getcwd())
 
 # In[81]:
 
+import pandas as pd
 
-df.columns = df.columns.str.strip() 
+
+df = pd.read_csv("cleaned_bank_data.csv")  
+
+
+df.columns = df.columns.str.strip()
+
 
 
 # In[6]:
@@ -71,7 +77,8 @@ df.head()
 
 
 # Converting 'loan_amount' and to float (removing '$' sign)
-df['loan_amount'] = df['loan_amount'].replace('[\$,]', '', regex=True).astype(float)
+df['loan_amount'] = df['loan_amount'].replace(r'[\$,]', '', regex=True).astype(float)
+
 
 
 # In[15]:
