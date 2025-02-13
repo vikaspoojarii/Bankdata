@@ -383,7 +383,7 @@ plt.show()
 # In[71]:
 
 
-pip install dash plotly pandas
+
 
 
 # In[94]:
