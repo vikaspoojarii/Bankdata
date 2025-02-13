@@ -30,7 +30,8 @@ print(os.getcwd())
 import pandas as pd
 
 
-df = pd.read_csv("cleaned_bank_data.csv")  
+df = pd.read_csv("Bank Data.csv")
+ 
 
 
 df.columns = df.columns.str.strip()
