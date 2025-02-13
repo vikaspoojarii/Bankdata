@@ -2,7 +2,14 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# Load Cleaned Data
+
+st.set_page_config(
+    page_title="Loan Analysis Dashboard",
+    page_icon="📊",
+    layout="wide"
+)
+
+# Loading the cleaned data
 @st.cache_data
 def load_data():
     df = pd.read_csv("cleaned_bank_data.csv")
@@ -10,66 +17,78 @@ def load_data():
 
 df = load_data()
 
-# ---- PAGE CONFIG ----
-st.set_page_config(page_title="Loan Analysis Dashboard", page_icon="📊", layout="wide")
-
 # ---- HEADER ----
 st.title("📊 Loan Data Analysis Dashboard")
-st.markdown("**A comprehensive dashboard analyzing loan amounts, repayment trends, and borrower demographics.**")
+st.write("Gain insights into loan trends, borrower demographics, and key financial metrics.")
 
-# ---- METRICS ----
-st.subheader("📈 Key Loan Insights")
+# ---- SIDEBAR ----
+st.sidebar.header("🔍 Filter Data")
+selected_term = st.sidebar.selectbox("Select Loan Term", df["term"].unique())
+selected_purpose = st.sidebar.selectbox("Select Loan Purpose", df["Purpose"].unique())
 
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("Total Loans Issued", f"{df.shape[0]:,}")
-col2.metric("Avg. Loan Amount", f"${df['loan_amount'].mean():,.2f}")
-col3.metric("Avg. Interest Rate", f"{df['int_rate'].mean():.2f}%")
-col4.metric("Default Rate", f"{((df['loan_status'] == 'Charged Off').sum() / df.shape[0]) * 100:.2f}%")
-
-st.divider()  # Visual break
-
-# ---- LOAN DISTRIBUTION ----
-st.subheader("💰 Loan Amount Distribution")
-
-fig_loan_dist = px.histogram(df, x="loan_amount", nbins=40, 
-                             title="Distribution of Loan Amounts", 
-                             color_discrete_sequence=["royalblue"])
-st.plotly_chart(fig_loan_dist, use_container_width=True)
-
-# ---- LOAN STATUS BREAKDOWN ----
-st.subheader("📌 Loan Status Breakdown")
-
-fig_loan_status = px.pie(df, names="loan_status", title="Loan Status Breakdown", 
-                         color_discrete_sequence=px.colors.qualitative.Set2)
-st.plotly_chart(fig_loan_status, use_container_width=True)
-
-st.divider()
-
-# ---- INCOME VS LOAN ----
-st.subheader("💵 Income vs Loan Amount")
-
-fig_income_loan = px.scatter(df, x="annual_income", y="loan_amount", 
-                             title="Annual Income vs Loan Amount", 
-                             color="loan_status", opacity=0.6)
-st.plotly_chart(fig_income_loan, use_container_width=True)
-
-# ---- LOAN TERM FILTER ----
-st.subheader("🔍 Loan Term & Purpose Breakdown")
-
-col_filter1, col_filter2 = st.columns(2)
-with col_filter1:
-    selected_term = st.selectbox("Select Loan Term:", df["term"].unique())
-
-with col_filter2:
-    selected_purpose = st.selectbox("Select Loan Purpose:", df["Purpose"].unique())
-
+# Filter Data
 filtered_df = df[(df["term"] == selected_term) & (df["Purpose"] == selected_purpose)]
 
-fig_filtered_loan = px.histogram(filtered_df, x="loan_amount", nbins=30, 
-                                 title=f"Loan Amount Distribution ({selected_term}, {selected_purpose})", 
-                                 color_discrete_sequence=["orange"])
-st.plotly_chart(fig_filtered_loan, use_container_width=True)
+# ---- METRICS ----
+total_loans = len(filtered_df)
+average_loan_amount = filtered_df["loan_amount"].mean()
+default_rate = (filtered_df["loan_status"] == "Charged Off").sum() / total_loans * 100
+
+# Display Key Metrics
+col1, col2, col3 = st.columns(3)
+col1.metric("📊 Total Loans", f"{total_loans:,}")
+col2.metric("💰 Avg Loan Amount", f"${average_loan_amount:,.2f}")
+col3.metric("⚠️ Default Rate", f"{default_rate:.2f}%")
+
+# ---- VISUALIZATIONS ----
+st.subheader("📌 Loan Amount Distribution")
+fig_loan_dist = px.histogram(
+    filtered_df, 
+    x="loan_amount", 
+    nbins=40, 
+    title="Distribution of Loan Amounts", 
+    color_discrete_sequence=["royalblue"],  
+    opacity=0.8
+)
+fig_loan_dist.update_layout(
+    xaxis_title="Loan Amount ($)",
+    yaxis_title="Frequency",
+    template="plotly_white"
+)
+st.plotly_chart(fig_loan_dist)
+
+st.subheader("📌 Loan Status Breakdown")
+fig_loan_status = px.pie(
+    filtered_df, 
+    names="loan_status",  
+    title="Loan Status Distribution",
+    color_discrete_sequence=px.colors.qualitative.Set2
+)
+st.plotly_chart(fig_loan_status)
+
+st.subheader("📌 Loan Amount vs. Interest Rate")
+fig_scatter = px.scatter(
+    filtered_df, 
+    x="loan_amount", 
+    y="int_rate",
+    title="Loan Amount vs Interest Rate",
+    opacity=0.6,
+    color_discrete_sequence=["green"]
+)
+st.plotly_chart(fig_scatter)
+
+st.subheader("📌 Annual Income vs. Loan Amount")
+fig_income = px.scatter(
+    filtered_df, 
+    x="annual_income", 
+    y="loan_amount",
+    title="Annual Income vs. Loan Amount",
+    opacity=0.6,
+    color_discrete_sequence=["blue"]
+)
+st.plotly_chart(fig_income)
 
 # ---- FOOTER ----
-st.markdown("🚀 **Built using Streamlit & Plotly** | Developed by [Vikas Poojari](https://www.linkedin.com/in/vikaspoojari)")
+st.write("📌 **Data Source:** Processed Loan Dataset")
+st.write("🚀 **Built by:** Vikas Poojari | Data Analytics | Portfolio Project")
 
