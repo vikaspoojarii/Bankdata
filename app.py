@@ -40,8 +40,8 @@ df.columns = df.columns.str.strip()
 
 # In[6]:
 
+# os.chdir('/Users/Vikaspoojari/Desktop/portfolio')  # Removed for Streamlit deployment
 
-os.chdir('/Users/Vikaspoojari/Desktop/portfolio')
 
 
 # In[7]:
